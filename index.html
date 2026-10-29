@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KuKirin Volt</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0b0b10">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg1:#4a1126;--bg2:#0b0b10;--card:#1b1b20;--line:#2c2c35;--text:#f3f3f6;--muted:#8e8e9a;--blue:#1e7cf2;--green:#34c759;--lcd:#0a0f0c;--off:#3a3a42;--nav:#141418;
+  color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+@media (prefers-color-scheme:light){:root:not([data-theme="dark"]){--bg1:#f3d9e3;--bg2:#eceff4;--card:#fff;--line:#dcdce4;--text:#16161a;--muted:#6b6b77;--off:#c9c9d1;--nav:#fff;color-scheme:light}}
+:root[data-theme="light"]{--bg1:#f3d9e3;--bg2:#eceff4;--card:#fff;--line:#dcdce4;--text:#16161a;--muted:#6b6b77;--off:#c9c9d1;--nav:#fff;color-scheme:light}
+*{box-sizing:border-box}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100%;background:linear-gradient(160deg,var(--bg1),var(--bg2) 60%) fixed;color:var(--text);font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.app{max-width:430px;margin:0 auto;padding:14px 14px 110px}
+h1{margin:6px 0 14px;text-align:center;font-size:28px;font-style:italic;font-weight:800;letter-spacing:.2px}
+h1 i{color:#ff7a3d;font-style:normal}
+.bar{display:flex;gap:10px;margin-bottom:12px}
+.bar input{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);color:var(--text);border-radius:14px;padding:12px 14px;font-size:15px}
+.btn{background:var(--blue);color:#fff;border:0;border-radius:14px;padding:0 16px;font-size:15px;font-weight:600;cursor:pointer}
+.btn:focus-visible,.sw:focus-visible,.mode:focus-visible,.nav button:focus-visible,input:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:19px;font-weight:700}
+.head{display:flex;justify-content:space-between;align-items:center}
+.state{color:var(--muted);font-size:13px;max-width:60%;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.grid{display:grid;grid-template-columns:1.2fr 1fr;gap:8px}
+.lcd{background:var(--lcd);border-radius:12px;padding:10px 12px;box-shadow:0 0 18px rgba(52,199,89,.28) inset;color:#eafff0}
+.lcd small{font-size:11px;color:#9fb3a5}
+.lcd b{display:block;font:700 44px/1.1 "Courier New",monospace;letter-spacing:2px;text-shadow:0 0 12px rgba(52,199,89,.7)}
+.lcd span{font-size:14px}
+.volts{display:grid;gap:5px}
+.volts div{background:var(--lcd);border-radius:8px;padding:5px 8px;display:flex;justify-content:space-between;font:600 10px "Courier New",monospace;color:#cfe;align-items:center}
+.volts em{font-style:normal;font-size:16px;color:#fff}
+.batt{margin-top:12px;font-size:13px;color:var(--muted)}
+.track{height:10px;background:var(--off);border-radius:6px;margin:5px 0 3px;overflow:hidden}
+.track i{display:block;height:100%;width:97%;background:var(--green);border-radius:6px}
+.pct{text-align:right;font-size:12px;color:var(--muted)}
+.modes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}
+.mode{background:transparent;border:1px solid var(--line);border-radius:12px;padding:10px 4px;color:var(--text);font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.mode .ic{font-size:20px}
+.mode[aria-pressed="true"]{border-color:var(--blue);background:rgba(30,124,242,.14)}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:16px;gap:10px}
+.row .l{display:flex;align-items:center;gap:10px}
+.sw{width:50px;height:30px;border-radius:15px;background:var(--off);border:0;position:relative;cursor:pointer;flex:none;transition:background .15s}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .15s}
+.sw[aria-checked="true"]{background:var(--blue)}
+.sw[aria-checked="true"]::after{transform:translateX(20px)}
+.scale{display:flex;justify-content:space-between;color:var(--muted);font-size:15px;margin-top:4px}
+.scale b{color:var(--text);font-weight:600}
+input[type=range]{width:100%;margin:10px 0 4px;accent-color:var(--blue)}
+.lang{color:var(--blue);font-weight:600}
+.foot{text-align:center;color:var(--muted);font-size:13px;margin:6px 0}
+.nav{position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;background:var(--nav);border-top:1px solid var(--line);padding:6px 6px calc(6px + env(safe-area-inset-bottom,0px))}
+.nav div{display:flex;max-width:430px;width:100%;gap:2px}
+.nav button{flex:1;background:none;border:0;color:var(--muted);font-size:11px;padding:6px 0;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px}
+.nav button span{font-size:20px}
+.nav button[aria-current="page"]{background:rgba(30,124,242,.16);color:var(--blue)}
+.soon{text-align:center;color:var(--muted);padding:34px 10px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main class="app">
+  <h1>KuKirin Volt<i>⚡</i></h1>
+  <div id="home">
+    <div class="bar">
+      <input id="filter" type="search" placeholder="Фільтр: назва/UUID" aria-label="Фільтр пристроїв">
+      <button class="btn" id="scan">Сканувати</button>
+    </div>
+
+    <section class="card">
+      <div class="head"><h2>Статус</h2><span class="state" id="state">Не підключено</span></div>
+      <div class="grid">
+        <div class="lcd"><small>SPEED</small><b id="spd">00.0</b><span>km/h</span></div>
+        <div class="volts">
+          <div>ПОТОЧНА НАПРУГА:<em>0.0 v</em></div>
+          <div>МАКС. НАПРУГА:<em>0.0 v</em></div>
+          <div>МІН. НАПРУГА:<em>0.0 v</em></div>
+        </div>
+      </div>
+      <div class="batt">Батарея
+        <div class="track"><i></i></div>
+        <div class="pct">97%</div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Режим їзди</h2>
+      <div class="modes" id="modes">
+        <button class="mode" data-m="eco" aria-pressed="true"><span class="ic">🍃</span>Eco</button>
+        <button class="mode" data-m="sport" aria-pressed="false"><span class="ic">🏃</span>Sport</button>
+        <button class="mode" data-m="race" aria-pressed="false"><span class="ic">🏁</span>Race</button>
+      </div>
+      <div class="row"><span>Нульовий старт</span><button class="sw" role="switch" data-k="zero" aria-checked="false" aria-label="Нульовий старт"></button></div>
+      <div class="row"><span>Круїз-контроль</span><button class="sw" role="switch" data-k="cruise" aria-checked="false" aria-label="Круїз-контроль"></button></div>
+      <div class="row"><span>Світло</span><button class="sw" role="switch" data-k="light" aria-checked="false" aria-label="Світло"></button></div>
+    </section>
+
+    <section class="card">
+      <h2>Опції з’єднання</h2>
+      <div class="row"><span class="l">🧭 GPS</span><button class="sw" role="switch" data-k="gps" aria-checked="true" aria-label="GPS"></button></div>
+      <div class="row"><span class="l">🔷 Bluetooth</span><button class="sw" role="switch" data-k="bt" aria-checked="false" aria-label="Bluetooth"></button></div>
+      <div class="row"><span class="l">🔁 Авто-підключення</span><button class="sw" role="switch" data-k="auto" aria-checked="false" aria-label="Авто-підключення"></button></div>
+      <div class="scale"><b>Speed Scale</b><span>Шкала швидкості</span></div>
+      <input type="range" id="scale" min="0" max="100" value="50" aria-label="Шкала швидкості">
+      <div class="row"><span>Мова</span><span class="lang">UA</span></div>
+    </section>
+  </div>
+  <div id="other" class="card soon" hidden>Цей розділ з’явиться пізніше.</div>
+  <p class="foot">© Olomowo Studio</p>
+</main>
+
+<nav class="nav"><div id="tabs">
+  <button data-t="home"><span>📡</span>Підключити</button>
+  <button data-t="x"><span>📋</span>Журнали</button>
+  <button data-t="x"><span>🛴</span>Самокат</button>
+  <button data-t="home" aria-current="page"><span>⚙️</span>Налаштування</button>
+  <button data-t="x"><span>❓</span>Посібники</button>
+</div></nav>
+
+<script>
+(function(){
+  var KEY="kukirin-volt", st={mode:"eco",zero:false,cruise:false,light:false,gps:true,bt:false,auto:false,scale:50};
+  try{var s=JSON.parse(localStorage.getItem(KEY)||"null");if(s)for(var k in s)st[k]=s[k];}catch(e){}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st));}catch(e){}}
+  function paint(){
+    document.querySelectorAll(".sw").forEach(function(b){b.setAttribute("aria-checked",String(!!st[b.dataset.k]));});
+    document.querySelectorAll(".mode").forEach(function(b){b.setAttribute("aria-pressed",String(b.dataset.m===st.mode));});
+    document.getElementById("scale").value=st.scale;
+  }
+  document.querySelectorAll(".sw").forEach(function(b){b.onclick=function(){st[b.dataset.k]=!st[b.dataset.k];save();paint();};});
+  document.querySelectorAll(".mode").forEach(function(b){b.onclick=function(){st.mode=b.dataset.m;save();paint();};});
+  document.getElementById("scale").oninput=function(e){st.scale=+e.target.value;save();};
+  var tabs=document.querySelectorAll("#tabs button");
+  tabs.forEach(function(b){b.onclick=function(){
+    tabs.forEach(function(x){x.removeAttribute("aria-current");});
+    b.setAttribute("aria-current","page");
+    var home=b.dataset.t==="home";
+    document.getElementById("home").hidden=!home;
+    document.getElementById("other").hidden=home;
+  };});
+  var stateEl=document.getElementById("state");
+  document.getElementById("scan").onclick=async function(){
+    if(!navigator.bluetooth){stateEl.textContent="Bluetooth недоступний. Відкрий у Chrome на Android";return;}
+    var f=document.getElementById("filter").value.trim();
+    try{
+      stateEl.textContent="Пошук…";
+      var opts=f?{filters:[{namePrefix:f}]}:{acceptAllDevices:true};
+      var d=await navigator.bluetooth.requestDevice(opts);
+      stateEl.textContent="Знайдено: "+(d.name||"без назви");
+      st.bt=true;save();paint();
+    }catch(e){stateEl.textContent="Пристрій не вибрано";}
+  };
+  paint();
+})();
+if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
+</script>
+</body>
+</html>
