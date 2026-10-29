@@ -61,6 +61,30 @@ input[type=range]{width:100%;margin:10px 0 4px;accent-color:var(--blue)}
 .nav button[aria-current="page"]{background:rgba(30,124,242,.16);color:var(--blue)}
 .soon{text-align:center;color:var(--muted);padding:34px 10px}
 [hidden]{display:none!important}
+
+.stwrap{display:flex;align-items:center;max-width:72%}
+.stwrap .state{max-width:none;min-width:0;flex:1}
+.radar{position:relative;width:34px;height:34px;flex:none;margin-left:10px}
+.radar i{position:absolute;inset:0;border-radius:50%;border:2px solid var(--blue);opacity:0}
+.radar b{position:absolute;inset:11px;border-radius:50%;background:var(--muted);transition:background .25s,box-shadow .25s}
+.radar[data-s="scan"] b{background:var(--blue);box-shadow:0 0 10px var(--blue)}
+.radar[data-s="scan"] i{animation:ping 1.8s ease-out infinite}
+.radar[data-s="scan"] i:nth-child(2){animation-delay:.6s}
+.radar[data-s="scan"] i:nth-child(3){animation-delay:1.2s}
+.radar[data-s="conn"] b{background:#ff9f0a;box-shadow:0 0 10px #ff9f0a}
+.radar[data-s="conn"] i:first-child{opacity:1;border-color:#ff9f0a transparent transparent transparent;animation:spin .9s linear infinite}
+.radar[data-s="ok"] b{background:var(--green);box-shadow:0 0 14px var(--green)}
+.radar[data-s="ok"] i:first-child{animation:ping 1.2s ease-out 1}
+.radar[data-s="err"] b{background:#ff453a;box-shadow:0 0 10px #ff453a}
+#stcard{transition:border-color .3s}
+#stcard[data-s="scan"]{border-color:var(--blue)}
+#stcard[data-s="conn"]{border-color:#ff9f0a}
+#stcard[data-s="ok"]{border-color:var(--green)}
+#stcard[data-s="ok"] .lcd{box-shadow:0 0 30px rgba(52,199,89,.55) inset}
+.btn:disabled{opacity:.7}
+@keyframes ping{0%{transform:scale(.3);opacity:.9}100%{transform:scale(1.25);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.radar i{animation:none!important}}
 </style>
 </head>
 <body>
@@ -72,8 +96,8 @@ input[type=range]{width:100%;margin:10px 0 4px;accent-color:var(--blue)}
       <button class="btn" id="scan">Сканувати</button>
     </div>
 
-    <section class="card">
-      <div class="head"><h2>Статус</h2><span class="state" id="state">Не підключено</span></div>
+    <section class="card" id="stcard">
+      <div class="head"><h2>Статус</h2><div class="stwrap"><span class="state" id="state">Не підключено</span><div class="radar" id="radar" aria-hidden="true"><i></i><i></i><i></i><b></b></div></div></div>
       <div class="grid">
         <div class="lcd"><small>SPEED</small><b id="spd">00.0</b><span>km/h</span></div>
         <div class="volts">
@@ -143,17 +167,29 @@ input[type=range]{width:100%;margin:10px 0 4px;accent-color:var(--blue)}
     document.getElementById("home").hidden=!home;
     document.getElementById("other").hidden=home;
   };});
-  var stateEl=document.getElementById("state");
-  document.getElementById("scan").onclick=async function(){
-    if(!navigator.bluetooth){stateEl.textContent="Bluetooth недоступний. Відкрий у Chrome на Android";return;}
+  var stateEl=document.getElementById("state"),radar=document.getElementById("radar"),card=document.getElementById("stcard"),scanBtn=document.getElementById("scan"),dev=null,busy=false;
+  function setS(s,t,b){card.dataset.s=s;radar.dataset.s=s;stateEl.textContent=t;if(b)scanBtn.textContent=b;}
+  function onDrop(){dev=null;setS("idle","Відключено","Сканувати");}
+  scanBtn.onclick=async function(){
+    if(busy)return;
+    if(dev&&dev.gatt&&dev.gatt.connected){dev.gatt.disconnect();return;}
+    if(!navigator.bluetooth){setS("err","Bluetooth недоступний. Відкрий у Chrome на Android");return;}
+    busy=true;
     var f=document.getElementById("filter").value.trim();
     try{
-      stateEl.textContent="Пошук…";
-      var opts=f?{filters:[{namePrefix:f}]}:{acceptAllDevices:true};
-      var d=await navigator.bluetooth.requestDevice(opts);
-      stateEl.textContent="Знайдено: "+(d.name||"без назви");
+      setS("scan","Пошук самокатів…","Пошук…");
+      dev=await navigator.bluetooth.requestDevice(f?{filters:[{namePrefix:f}]}:{acceptAllDevices:true});
+      dev.addEventListener("gattserverdisconnected",onDrop);
+      setS("conn","Підключення до "+(dev.name||"пристрою")+"…","Підключення…");
+      await dev.gatt.connect();
+      setS("ok","Підключено: "+(dev.name||"без назви"),"Відключити");
       st.bt=true;save();paint();
-    }catch(e){stateEl.textContent="Пристрій не вибрано";}
+    }catch(e){
+      dev=null;
+      var cancel=e&&e.name==="NotFoundError";
+      setS(cancel?"idle":"err",cancel?"Пристрій не вибрано":"Не вдалося підключитись","Сканувати");
+    }
+    busy=false;
   };
   paint();
 })();
